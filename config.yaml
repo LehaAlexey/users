@@ -21,3 +21,8 @@ scheduler:
   tick_seconds: 5
   default_interval_seconds: 3600
   max_batch: 100
+
+swagger:
+  enabled: true
+  path: "/swagger"
+  spec_path: "api/swagger/swagger.json"

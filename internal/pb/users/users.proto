@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package users;
+
+option go_package = "github.com/LehaAlexey/Users/internal/pb/users;users";
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  int64 created_at = 4;
+}
+
+message UserURL {
+  string id = 1;
+  string user_id = 2;
+  string url = 3;
+  string normalized_url = 4;
+  int32 polling_interval_seconds = 5;
+  int64 created_at = 6;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string name = 2;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message AddUrlRequest {
+  string user_id = 1;
+  string url = 2;
+  int32 polling_interval_seconds = 3;
+}
+
+message AddUrlResponse {
+  UserURL url = 1;
+}
+
+message ListUrlsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message ListUrlsResponse {
+  repeated UserURL urls = 1;
+}
+
+service UsersService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc AddUrl(AddUrlRequest) returns (AddUrlResponse);
+  rpc ListUrls(ListUrlsRequest) returns (ListUrlsResponse);
+}

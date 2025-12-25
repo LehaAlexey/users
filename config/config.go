@@ -13,6 +13,7 @@ type Config struct {
 	HTTP     HTTPConfig     `yaml:"http"`
 	GRPC     GRPCConfig     `yaml:"grpc"`
 	Scheduler SchedulerConfig `yaml:"scheduler"`
+	Swagger  SwaggerConfig  `yaml:"swagger"`
 }
 
 type DatabaseConfig struct {
@@ -42,6 +43,12 @@ type SchedulerConfig struct {
 	TickSeconds            int `yaml:"tick_seconds"`
 	DefaultIntervalSeconds int `yaml:"default_interval_seconds"`
 	MaxBatch               int `yaml:"max_batch"`
+}
+
+type SwaggerConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Path    string `yaml:"path"`
+	SpecPath string `yaml:"spec_path"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

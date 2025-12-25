@@ -3,6 +3,8 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/LehaAlexey/Users/config"
@@ -12,6 +14,7 @@ import (
 	"github.com/LehaAlexey/Users/internal/scheduler"
 	"github.com/LehaAlexey/Users/internal/services/userservice"
 	"github.com/LehaAlexey/Users/internal/storage/pgstorage"
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
@@ -44,7 +47,10 @@ func InitApp(configuration *config.Config) (*App, error) {
 	service := userservice.New(storage, configuration.Scheduler.DefaultIntervalSeconds)
 	handler := httpapi.New(service)
 
-	server := NewHTTPServer(configuration.HTTP.Addr, handler.Routes())
+	router := chi.NewRouter()
+	router.Mount("/", handler.Routes())
+	mountSwagger(router, configuration)
+	server := NewHTTPServer(configuration.HTTP.Addr, router)
 
 	grpcSrv := grpc.NewServer()
 	grpcHandler := grpcserver.New(service)
@@ -67,4 +73,28 @@ type SchedulerRunner interface {
 
 type GRPCServerRunner interface {
 	Run(ctx context.Context) error
+}
+
+func mountSwagger(router chi.Router, configuration *config.Config) {
+	if configuration == nil || !configuration.Swagger.Enabled {
+		return
+	}
+
+	path := strings.TrimSpace(configuration.Swagger.Path)
+	if path == "" {
+		path = "/swagger"
+	}
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	specPath := strings.TrimSpace(configuration.Swagger.SpecPath)
+	if specPath == "" {
+		specPath = "api/swagger/swagger.json"
+	}
+
+	router.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		http.ServeFile(w, r, specPath)
+	})
 }
